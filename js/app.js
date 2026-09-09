@@ -45,6 +45,7 @@ function setDefaultDateTime() {
 }
 
 let currentStart = null; // { lat, lng, label }
+let lastResult = null;
 
 function setStatus(message, isError) {
   const el = document.getElementById("location-status");
@@ -151,6 +152,24 @@ function renderResults(result, startTime) {
   const startLabel = currentStart.label || "Start";
   setStartMarker(currentStart.lat, currentStart.lng, startLabel);
   renderRoutes(result.suggestions.map((s) => s.route));
+
+  lastResult = result;
+}
+
+function buildSpokenSummary(result) {
+  const parts = [...result.conditions.notes];
+  if (result.rideEndsAfterDark) {
+    parts.push("Your ride window ends after sunset, so bring lights.");
+  }
+  const top = result.suggestions[0];
+  if (top) {
+    parts.push(
+      `Top pick: ${top.route.name}, about ${top.route.distanceKm} kilometres, ${top.distanceToStart.toFixed(
+        1
+      )} kilometres from your start. ${top.route.description}`
+    );
+  }
+  return parts.join(" ");
 }
 
 async function handleSubmit(event) {
@@ -198,6 +217,158 @@ async function handleSubmit(event) {
   }
 }
 
+function setVoiceStatus(message, isError) {
+  const el = document.getElementById("voice-status");
+  el.textContent = message;
+  el.classList.toggle("error", !!isError);
+}
+
+function applyVoiceCommand(transcript) {
+  const parsed = parseVoiceCommand(transcript);
+  const heard = [`Heard: "${transcript}".`];
+  const setParts = [];
+  const missedParts = [];
+
+  if (parsed.location) {
+    const select = document.getElementById("start-location-select");
+    select.value = `${parsed.location.lat},${parsed.location.lng}`;
+    currentStart = { lat: parsed.location.lat, lng: parsed.location.lng, label: parsed.location.name };
+    setStatus(`Starting from ${parsed.location.name}.`, false);
+    setParts.push(`start: ${parsed.location.name}`);
+  } else {
+    missedParts.push("start location");
+  }
+
+  if (parsed.durationMinutes) {
+    const select = document.getElementById("duration");
+    const options = Array.from(select.options).map((o) => Number(o.value));
+    const closest = options.reduce((best, val) =>
+      Math.abs(val - parsed.durationMinutes) < Math.abs(best - parsed.durationMinutes) ? val : best
+    );
+    select.value = String(closest);
+    setParts.push(`duration: ${formatMinutes(closest)}`);
+  } else {
+    missedParts.push("duration");
+  }
+
+  if (parsed.areaId) {
+    document.getElementById("destination-area").value = parsed.areaId;
+    const areaName = AREAS.find((a) => a.id === parsed.areaId)?.name || parsed.areaId;
+    setParts.push(`area: ${areaName}`);
+  }
+
+  if (setParts.length > 0) heard.push(`Set ${setParts.join(", ")}.`);
+  if (missedParts.length > 0) heard.push(`Didn't catch ${missedParts.join(" or ")} — please set manually.`);
+
+  setVoiceStatus(heard.join(" "), missedParts.length > 0 && setParts.length === 0);
+}
+
+function initVoiceInput() {
+  const button = document.getElementById("voice-input-button");
+  if (!isSpeechRecognitionSupported()) {
+    button.hidden = true;
+    return;
+  }
+  button.hidden = false;
+
+  let recognizing = false;
+
+  button.addEventListener("click", () => {
+    if (recognizing) return;
+    const recognition = createRecognizer();
+    recognizing = true;
+    button.disabled = true;
+    button.textContent = "🎤 Listening…";
+    setVoiceStatus("Listening — try: \"I'm at Bedok, 90 minutes, heading east.\"", false);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      applyVoiceCommand(transcript);
+    };
+    recognition.onerror = (event) => {
+      setVoiceStatus(`Voice input error: ${event.error}`, true);
+    };
+    recognition.onend = () => {
+      recognizing = false;
+      button.disabled = false;
+      button.textContent = "🎤 Speak your request";
+    };
+
+    recognition.start();
+  });
+}
+
+function initVoiceSettings() {
+  const toggle = document.getElementById("voice-settings-toggle");
+  const panel = document.getElementById("voice-settings-panel");
+  const apiKeyInput = document.getElementById("inworld-api-key");
+  const voiceIdInput = document.getElementById("inworld-voice-id");
+  const modelIdInput = document.getElementById("inworld-model-id");
+  const statusEl = document.getElementById("voice-settings-status");
+
+  toggle.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) {
+      const settings = getInworldSettings();
+      apiKeyInput.value = settings.apiKey;
+      voiceIdInput.value = settings.voiceId;
+      modelIdInput.value = settings.modelId;
+      statusEl.textContent = "";
+    }
+  });
+
+  document.getElementById("voice-settings-save").addEventListener("click", () => {
+    saveInworldSettings({
+      apiKey: apiKeyInput.value.trim(),
+      voiceId: voiceIdInput.value.trim(),
+      modelId: modelIdInput.value.trim(),
+    });
+    statusEl.textContent = "Saved.";
+    statusEl.classList.remove("error");
+  });
+
+  document.getElementById("voice-settings-test").addEventListener("click", async () => {
+    statusEl.textContent = "Testing…";
+    statusEl.classList.remove("error");
+    try {
+      await speakWithInworld("Voice ready. This is your Singapore ride planner.");
+      statusEl.textContent = "Playing test audio.";
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.classList.add("error");
+    }
+  });
+}
+
+function initReadResultsButton() {
+  const button = document.getElementById("read-results-button");
+  const statusEl = document.getElementById("read-results-status");
+
+  button.addEventListener("click", async () => {
+    if (!lastResult) return;
+    if (!hasInworldApiKey()) {
+      statusEl.textContent = "Add your Inworld API key under Voice settings first.";
+      statusEl.classList.add("error");
+      return;
+    }
+    button.disabled = true;
+    statusEl.classList.remove("error");
+    statusEl.textContent = "Generating audio…";
+    try {
+      const audio = await speakWithInworld(buildSpokenSummary(lastResult));
+      statusEl.textContent = "Playing…";
+      audio.addEventListener("ended", () => {
+        statusEl.textContent = "";
+      });
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.classList.add("error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
 function init() {
   populateAreaSelect();
   populateStartSelect();
@@ -207,6 +378,10 @@ function init() {
   document.getElementById("use-location-button").addEventListener("click", useGeolocation);
   document.getElementById("start-location-select").addEventListener("change", onStartSelectChange);
   document.getElementById("ride-form").addEventListener("submit", handleSubmit);
+
+  initVoiceInput();
+  initVoiceSettings();
+  initReadResultsButton();
 }
 
 document.addEventListener("DOMContentLoaded", init);

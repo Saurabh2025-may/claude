@@ -19,6 +19,38 @@
   </header>
 
   <main>
+    <section class="voice-bar">
+      <button type="button" id="voice-input-button" class="voice-button" hidden>
+        🎤 Speak your request
+      </button>
+      <p id="voice-status" class="status-line"></p>
+      <button type="button" id="voice-settings-toggle" class="link-button">Voice settings (Inworld AI)</button>
+    </section>
+
+    <section id="voice-settings-panel" class="voice-settings-panel" hidden>
+      <p class="settings-hint">
+        Your API key is stored only in this browser (localStorage) and sent directly to Inworld from here —
+        there's no backend. Don't share a deployment of this app with your key already saved in it.
+      </p>
+      <div class="row">
+        <label for="inworld-api-key">API key</label>
+        <input type="password" id="inworld-api-key" placeholder="Your Inworld API key" autocomplete="off" />
+      </div>
+      <div class="row">
+        <label for="inworld-voice-id">Voice ID</label>
+        <input type="text" id="inworld-voice-id" placeholder="e.g. Ashley" />
+      </div>
+      <div class="row">
+        <label for="inworld-model-id">Model ID</label>
+        <input type="text" id="inworld-model-id" placeholder="e.g. inworld-tts-1.5-max" />
+      </div>
+      <div class="row">
+        <button type="button" id="voice-settings-save">Save</button>
+        <button type="button" id="voice-settings-test">Test voice</button>
+      </div>
+      <p id="voice-settings-status" class="status-line"></p>
+    </section>
+
     <form id="ride-form" class="ride-form">
       <fieldset>
         <legend>1. Where are you starting from?</legend>
@@ -65,6 +97,10 @@
     <section id="results" hidden>
       <div id="conditions-panel" class="conditions-panel"></div>
       <p id="budget-summary" class="budget-summary"></p>
+      <div class="row">
+        <button type="button" id="read-results-button">🔊 Read this to me</button>
+        <span id="read-results-status" class="status-line"></span>
+      </div>
       <div id="map"></div>
       <div id="results-list" class="results-list"></div>
     </section>
@@ -86,6 +122,8 @@
   <script src="js/weather.js"></script>
   <script src="js/planner.js"></script>
   <script src="js/map.js"></script>
+  <script src="js/voice-input.js"></script>
+  <script src="js/voice-output.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -30,16 +30,34 @@ or
 npx serve .
 ```
 
+## Voice
+
+- **Speak your request** (top-left button) uses the browser's built-in speech recognition
+  (Chrome/Edge only, no account needed) to fill in your start location, ride duration, and
+  preferred area from something like *"I'm at Bedok, I've got 90 minutes, heading east."*
+  Fields it can't confidently parse are left for you to set manually.
+- **Read this to me** (on the results panel) and **Test voice** (in Voice settings) use the
+  [Inworld AI](https://inworld.ai/) TTS API to speak the conditions and top route suggestion
+  aloud. Open **Voice settings (Inworld AI)** and paste in your Inworld API key, voice ID
+  (default `Ashley`), and model ID (default `inworld-tts-1.5-max`) to enable it.
+  - There's no backend: the key is stored only in this browser's `localStorage` and sent
+    directly from your browser to Inworld's API on each request. Only use this on a
+    device/browser you trust, and don't publicly deploy a copy of this app with your key
+    already saved in it — anyone using that deployment could see the key in their network
+    requests and use your quota.
+
 ## How it works
 
 - `js/routes-data.js` — curated Singapore route dataset (indicative paths, not surveyed GPS tracks) and area lists
 - `js/weather.js` — fetches live conditions from [Open-Meteo](https://open-meteo.com/) (free, no API key)
 - `js/planner.js` — turns conditions into an effective riding speed, a distance budget for the time window, and scores/ranks routes by fit, proximity, area preference, and condition-based tags
 - `js/map.js` — renders the start point and suggested routes on a [Leaflet](https://leafletjs.com/)/OpenStreetMap map
-- `js/app.js` — wires the form, geolocation, and results UI together
+- `js/voice-input.js` — browser speech recognition + a small parser for location/duration/area
+- `js/voice-output.js` — Inworld AI TTS request/playback
+- `js/app.js` — wires the form, geolocation, voice controls, and results UI together
 
 ## Notes
 
 - Route paths are approximate, for display purposes — not turn-by-turn navigation.
 - Geolocation is restricted to Singapore's bounding box; outside of it, pick an area manually.
-- No backend, database, or API keys required.
+- No backend or database. Inworld voice output needs your own Inworld API key (see Voice above); everything else needs no API keys.
