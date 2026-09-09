@@ -1,0 +1,253 @@
+:root {
+  --teal: #1d7a6e;
+  --teal-dark: #14554c;
+  --amber: #c65d24;
+  --bg: #f6f8f7;
+  --card-bg: #ffffff;
+  --border: #dde5e2;
+  --text: #1f2a27;
+  --text-muted: #5b6b66;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white;
+  padding: 2rem 1.25rem 2.5rem;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.8rem;
+}
+
+.app-header p {
+  margin: 0 auto;
+  max-width: 36rem;
+  opacity: 0.95;
+}
+
+main {
+  max-width: 40rem;
+  margin: -1.5rem auto 2rem;
+  padding: 0 1rem;
+}
+
+.ride-form {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+fieldset {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0 0 1rem;
+  margin: 0 0 1rem;
+}
+
+fieldset:last-of-type {
+  border-bottom: none;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 0 0.5rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.row label {
+  min-width: 6.5rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+select,
+input[type="datetime-local"] {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: white;
+}
+
+.or-divider {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#use-location-button {
+  background: var(--teal);
+  color: white;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+#use-location-button:hover {
+  background: var(--teal-dark);
+}
+
+.status-line {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0.25rem 0 0;
+}
+
+.status-line.error {
+  color: var(--amber);
+}
+
+.primary-button {
+  width: 100%;
+  background: var(--amber);
+  color: white;
+  border: none;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.primary-button:hover {
+  filter: brightness(0.95);
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #b3261e;
+  font-size: 0.88rem;
+  min-height: 1.2em;
+  margin: 0 0 0.5rem;
+}
+
+#results {
+  margin-top: 1.5rem;
+}
+
+.conditions-panel {
+  background: #eaf5f2;
+  border-left: 4px solid var(--teal);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.conditions-panel.caution {
+  background: #fdf3e6;
+  border-left-color: var(--amber);
+}
+
+.conditions-panel.poor {
+  background: #fbeaea;
+  border-left-color: #b3261e;
+}
+
+.conditions-panel p {
+  margin: 0.25rem 0;
+  font-size: 0.92rem;
+}
+
+.budget-summary {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+#map {
+  height: 18rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.route-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.route-card h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+}
+
+.route-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.route-note {
+  font-size: 0.85rem;
+  color: var(--amber);
+}
+
+.route-tags {
+  margin: 0.5rem 0 0;
+}
+
+.route-tags span {
+  display: inline-block;
+  background: #eef2f0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  margin: 0 0.3rem 0.3rem 0;
+  text-transform: capitalize;
+}
+
+.app-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 1rem;
+}
+
+@media (min-width: 600px) {
+  .row label {
+    min-width: 8rem;
+  }
+}
